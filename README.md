@@ -2,6 +2,10 @@
 
 Collection of AWS utilities for making working with Amazon's Web Services a little easier.
 
+```
+npm i mg-aws --save
+```
+
 ## ssm - Secure System Manager
 
 A utility that retrieves a list of values from the Property Manager and caches them.  It is designed for properties that have been stored in JSON format in the property manager.
