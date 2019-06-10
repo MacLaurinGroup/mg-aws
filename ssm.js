@@ -7,7 +7,7 @@
  */
 "use strict";
 
-const log = require("mg-toolbox/log")("SSM");
+const log = new(require("mg-toolbox/log"))("SSM");
 
 module.exports = class ssm {
 
@@ -16,22 +16,23 @@ module.exports = class ssm {
     this.region = (typeof _region != "undefined") ? _region : "us-east-1";
   }
 
-  async init(paramArray) {
-    const params = {
-      Names: paramArray,
-      WithDecryption: false
-    };
-
+  async init(paramArray, withDecryption) {
     try {
-      await this._getParameters(params)
-        .then((p) => {
-          this.paramValues = this._processParams(p);
-        });
+      const AWS = require("aws-sdk");
+      const ssm = new AWS.SSM({
+        region: this.region
+      });
 
-      log.config( "Params Loaded=" + JSON.stringify(paramArray));
+      const p = await ssm.getParameters({
+        Names: paramArray,
+        WithDecryption: (typeof withDecryption == "undefined") ? false : withDecryption
+      }).promise();
+      this.paramValues = this._processParams(p);
+
+      log.config("Params Loaded=" + JSON.stringify(paramArray));
       return this;
     } catch (err) {
-      log.serve(err,false);
+      log.severe(err, false);
       throw new Error("Unable to retrieve SSM; " + err);
     }
   }
@@ -46,25 +47,8 @@ module.exports = class ssm {
     return this.paramValues[param];
   }
 
-  getParams(){
+  getParams() {
     return Object.keys(this.paramValues);
-  }
-
-
-  /**
-   * Call the initial SSM to fetch all the parameters
-   *
-   */
-  _getParameters(params) {
-    //set up a new promise instead of leveraging the callback
-    return new Promise((resolve, reject) => {
-      const AWS = require("aws-sdk");
-      const ssm = new AWS.SSM({region:this.region});
-
-      ssm.getParameters(params, (error, result) => {
-        return (error ? reject(error) : resolve(result));
-      });
-    });
   }
 
 

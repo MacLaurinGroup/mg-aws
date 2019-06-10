@@ -1,11 +1,8 @@
 {
   "name": "mg-aws",
-  "version": "0.0.1",
+  "version": "0.0.5",
   "description": "Collection of AWS utilities for Lambda and node",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "scripts": {
     "test": "jasmine"
   },
@@ -25,10 +22,10 @@
   },
   "homepage": "https://github.com/MacLaurinGroup/mg-aws#readme",
   "devDependencies": {
-    "aws-sdk": "^2.97.0",
     "jasmine": "^3.4.0"
   },
   "dependencies": {
-    "mg-toolbox": "^0.0.3"
+    "mg-toolbox": "^0.0.7",
+    "aws-sdk": "^2.97.0"
   }
 }
