@@ -8,6 +8,7 @@
 "use strict";
 
 const log = new(require("mg-toolbox/log"))("SSM");
+const SSM = require("aws-sdk/clients/ssm");
 
 module.exports = class ssm {
 
@@ -18,8 +19,8 @@ module.exports = class ssm {
 
   async init(paramArray, withDecryption) {
     try {
-      const AWS = require("aws-sdk");
-      const ssm = new AWS.SSM({
+
+      const ssm = new SSM({
         region: this.region
       });
 
