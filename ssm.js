@@ -3,7 +3,7 @@
  *
  * Assumes the keys are stored in JSON formatted keys
  *
- * (c) MacLaurin Group LLC 2018
+ * (c) MacLaurin Group LLC 2019
  */
 "use strict";
 
@@ -14,23 +14,25 @@ module.exports = class ssm {
 
   constructor(_region) {
     this.paramValues = {};
+    this.withDecryption = false;
     this.region = (typeof _region != "undefined") ? _region : "us-east-1";
   }
 
   async init(paramArray, withDecryption) {
     try {
+      this.withDecryption = (typeof withDecryption == "undefined") ? false : withDecryption;
 
-      const ssm = new SSM({
-        region: this.region
-      });
+      this.ssm = new SSM({region: this.region});
 
-      const p = await ssm.getParameters({
-        Names: paramArray,
-        WithDecryption: (typeof withDecryption == "undefined") ? false : withDecryption
-      }).promise();
-      this.paramValues = this._processParams(p);
+      if (paramArray !== null && paramArray.length > 0) {
+        const p = await this.ssm.getParameters({
+          Names: paramArray,
+          WithDecryption: this.withDecryption
+        }).promise();
+        this.paramValues = this._processParams(p);
+        log.config("Params Loaded=" + JSON.stringify(paramArray));
+      }
 
-      log.config("Params Loaded=" + JSON.stringify(paramArray));
       return this;
     } catch (err) {
       log.severe(err, false);
@@ -48,8 +50,40 @@ module.exports = class ssm {
     return this.paramValues[param];
   }
 
+
+  /**
+   * Returns all the parameters
+   */
   getParams() {
     return Object.keys(this.paramValues);
+  }
+
+
+  /**
+   * Fetches the parameter from cache, but if not, then gets it from SSM
+   * @param {*} param 
+   */
+  async fetchParamCache(param){
+    if ( this.paramValues[param] ){
+      return this.paramValues[param];
+    }
+
+    this.paramValues[param] = await this.fetchParam(param);
+    return this.paramValues[param];
+  }
+
+
+  /**
+   * Goes and fetches the parameter but does not cache
+   * @param {*} param 
+   */
+  async fetchParam(param){
+    const p = await this.ssm.getParameter({
+      Name: param,
+      WithDecryption: this.withDecryption
+    }).promise();
+
+    return p == null ? null : p.Value;
   }
 
 
@@ -60,8 +94,8 @@ module.exports = class ssm {
   _processParams(params) {
     const pAll = {};
     params.Parameters.forEach(p => {
-      let arry = p.Name.split("/");
-      let key = arry[arry.length - 1];
+      const arry = p.Name.split("/");
+      const key = arry[arry.length - 1];
       pAll[key] = JSON.parse(p.Value);
     });
     return pAll;

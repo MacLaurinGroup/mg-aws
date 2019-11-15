@@ -23,3 +23,5 @@ console.log( ssm.getParam("thecollector") );
 console.log( ssm.getParam("thecollector")["database"] );
 console.log( ssm.getParam("thecollector")["username"] );
 ```
+
+There are two special methods for caching parameters on-the-fly, fetchParamCache(param) and fetchParam(param) which will make the call out there and then.
