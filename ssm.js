@@ -30,7 +30,7 @@ module.exports = class ssm {
           WithDecryption: this.withDecryption
         }).promise();
         this.paramValues = this._processParams(p);
-        log.config("Params Loaded=" + JSON.stringify(paramArray));
+        log.config("init() Loaded=" + JSON.stringify(paramArray));
       }
 
       return this;
@@ -61,13 +61,12 @@ module.exports = class ssm {
 
   /**
    * Fetches the parameter from cache, but if not, then gets it from SSM
-   * @param {*} param 
+   * @param {*} param
    */
   async fetchParamCache(param){
     if ( this.paramValues[param] ){
       return this.paramValues[param];
     }
-
     this.paramValues[param] = await this.fetchParam(param);
     return this.paramValues[param];
   }
@@ -75,7 +74,7 @@ module.exports = class ssm {
 
   /**
    * Goes and fetches the parameter but does not cache
-   * @param {*} param 
+   * @param {*} param
    */
   async fetchParam(param){
     const p = await this.ssm.getParameter({
@@ -83,7 +82,7 @@ module.exports = class ssm {
       WithDecryption: this.withDecryption
     }).promise();
 
-    return p == null ? null : p.Value;
+    return p == null ? null : JSON.parse(p.Parameter.Value);
   }
 
 
